@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from firebase_admin import db
 from firebase_service import FirebaseService
 from order_predictor import OrderPredictor
@@ -6,9 +6,14 @@ from order_predictor import OrderPredictor
 app = Flask(__name__)
 
 # Initialize Firebase Service
-SERVICE_ACCOUNT_KEY = 'go-cart-68aa2-firebase-adminsdk-3os6i-6a120ebb05.json'
+SERVICE_ACCOUNT_KEY = 'sak.json'
 DATABASE_URL = 'https://go-cart-68aa2-default-rtdb.firebaseio.com/'
 firebase_service = FirebaseService(SERVICE_ACCOUNT_KEY, DATABASE_URL)
+
+# Welcome route
+@app.route('/')
+def welcome():
+    return render_template('./templates/index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -26,7 +31,6 @@ def predict():
     firebase_service.store_predictions(customer_id, predicted_item_ids, item_details)
 
     return jsonify({'predicted_item_ids': predicted_item_ids, 'item_details': item_details})
-
 
 def retrieve_item_details(item_ids):
     ref = db.reference('shopitem')
@@ -50,9 +54,6 @@ def retrieve_item_details(item_ids):
                 print(f"Item ID {item_id} not found under shop ID {shop_id} in 'shopitem'.")
 
     return item_details
-
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8501, debug=True)
