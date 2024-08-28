@@ -13,9 +13,8 @@ class FirebaseService:
     def load_customer_orders(self, customer_id):
         ref = db.reference(f'Customer/{customer_id}/Orders')
         return ref.get()
-
     def store_predictions(self, customer_id, item_ids, item_details):
-        ref = db.reference(f'Customer/{customer_id}/Cart')
+        ref = db.reference(f'Customer/{customer_id}/PredictedItem')
         for item_id in item_ids:
             details = item_details.get(item_id, {})
             unit_price = details.get('price', 0)
