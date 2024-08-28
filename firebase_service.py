@@ -22,5 +22,6 @@ class FirebaseService:
                 'cartQty': 1,
                 'total': unit_price,
                 'unitPrice': unit_price,
-                'division': details.get('division', '')
+                'division': details.get('division', ''),
+                'imageUrl': details.get('imageUrl', '')
             })

@@ -7,28 +7,55 @@ class OrderPredictor:
         self.orders = orders
 
     def prepare_data(self):
-        # Prepare a list to hold order data
         data = []
 
-        # Loop through each order and its details
+        # Check if orders data is empty or not in expected format
+        if not self.orders or not isinstance(self.orders, dict):
+            print("No valid orders data found.")
+            return pd.DataFrame()  # Return empty DataFrame
+
         for date, order_data in self.orders.items():
+            # Ensure that order_data is a dictionary
+            if not isinstance(order_data, dict):
+                print(f"Unexpected order data format for date {date}: {order_data}")
+                continue
+
             for order_id, order_details in order_data.items():
-                for item_id, item_details in order_details['items'].items():
-                    # Append relevant order information to the data list
+                # Debug print to check the format of order_details
+                print(f"Order Details for Order ID {order_id}: {order_details}")
+
+                # Ensure that order_details is a dictionary and has 'items'
+                if not isinstance(order_details, dict) or 'items' not in order_details:
+                    print(f"Missing or incorrect items field for order ID {order_id}: {order_details}")
+                    continue
+
+                items = order_details.get('items', {})
+
+                # Ensure 'items' is a dictionary
+                if not isinstance(items, dict):
+                    print(f"Unexpected items format for order ID {order_id}: {items}")
+                    continue
+
+                for item_id, item_details in items.items():
+                    # Ensure item_details is a dictionary and has required fields
+                    if not isinstance(item_details, dict):
+                        print(f"Unexpected item details format for item ID {item_id}: {item_details}")
+                        continue
+
                     data.append({
                         'item_id': item_id,
-                        'quantity': item_details['quantity'],
-                        'total': item_details['total'],
+                        'quantity': item_details.get('quantity', 0),
+                        'total': item_details.get('total', 0),
                         'date': date,
-                        'unitPrice': item_details['unitPrice'],
-                        'division': item_details['division'],
+                        'unitPrice': item_details.get('unitPrice', 0),
+                        'division': item_details.get('division', ''),
+                        'imageUrl':item_details.get('imageUrl', ''),
                     })
 
         # Convert the data list to a DataFrame
         df = pd.DataFrame(data)
-
         # Convert the 'date' column to datetime format
-        df['date'] = pd.to_datetime(df['date'])
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')  # Handle any invalid dates
 
         return df
 
