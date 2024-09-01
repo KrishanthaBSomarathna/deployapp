@@ -12,11 +12,6 @@ SERVICE_ACCOUNT_KEY = 'sak.json'
 DATABASE_URL = 'https://go-cart-68aa2-default-rtdb.firebaseio.com/'
 firebase_service = FirebaseService(SERVICE_ACCOUNT_KEY, DATABASE_URL)
 
-# Welcome route
-@app.route('/')
-def welcome():
-    return render_template('./templates/index.html')
-
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json

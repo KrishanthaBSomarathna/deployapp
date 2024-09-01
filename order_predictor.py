@@ -1,4 +1,3 @@
-# order_predictor.py
 import pandas as pd
 
 class OrderPredictor:
@@ -44,12 +43,13 @@ class OrderPredictor:
 
                     data.append({
                         'item_id': item_id,
+                        'item_name': item_details.get('itemName', ''),
                         'quantity': item_details.get('quantity', 0),
                         'total': item_details.get('total', 0),
                         'date': date,
                         'unitPrice': item_details.get('unitPrice', 0),
                         'division': item_details.get('division', ''),
-                        'imageUrl':item_details.get('imageUrl', ''),
+                        'imageUrl': item_details.get('imageUrl', ''),
                     })
 
         # Convert the data list to a DataFrame
@@ -60,13 +60,20 @@ class OrderPredictor:
         return df
 
     def predict_future_item_ids(self, df):
-        # Group the DataFrame by item_id and aggregate the quantity and total values
-        item_summary = df.groupby('item_id').agg({'quantity': 'sum', 'total': 'sum'}).reset_index()
+        # Group the DataFrame by item_id, item_name and aggregate the quantity and total values
+        item_summary = df.groupby(['item_id', 'item_name']).agg({
+            'quantity': 'sum', 
+            'total': 'sum',
+            'unitPrice': 'min'  # Get the minimum unit price for items with the same name
+        }).reset_index()
 
-        # Sort items by total quantity ordered, then by total value spent
-        item_summary = item_summary.sort_values(by=['quantity', 'total'], ascending=[False, False])
+        # Sort items by item_name, then by unitPrice (ascending) and total quantity (descending)
+        item_summary = item_summary.sort_values(by=['item_name', 'unitPrice', 'quantity'], ascending=[True, True, False])
+
+        # Filter to keep only the item with the lowest unit price for each item name
+        filtered_item_summary = item_summary.drop_duplicates(subset=['item_name'], keep='first')
 
         # Predict the top N items based on past orders
-        predicted_item_ids = item_summary['item_id'].head(5).tolist()  # Example: take the top 5 items
+        predicted_item_ids = filtered_item_summary['item_id'].head(5).tolist()  # Example: take the top 5 items
 
         return predicted_item_ids
